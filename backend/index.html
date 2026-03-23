@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Brief" />
+  <meta name="theme-color" content="#0a0a0f" />
+  <title>The Morning Brief</title>
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="apple-touch-icon" href="/icon-192.png" />
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Mono:wght@400;500&display=swap');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    :root {
+      --bg: #0a0a0f;
+      --bg2: #0d0d18;
+      --border: #14141f;
+      --text: #e0dbd0;
+      --muted: #4a4a68;
+      --dim: #252535;
+      --physics: #60a5fa;
+      --ai: #a78bfa;
+      --energy: #34d399;
+      --philosophy: #fb923c;
+    }
+
+    html, body { height: 100%; background: var(--bg); color: var(--text); overscroll-behavior: none; }
+
+    body {
+      font-family: 'DM Serif Display', Georgia, serif;
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    /* ── Header ── */
+    .header {
+      background: linear-gradient(180deg, var(--bg2) 0%, var(--bg) 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 24px 24px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .header-left .greeting {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    .header-left .title { font-size: 24px; font-weight: 400; letter-spacing: -0.02em; }
+    .header-right { text-align: right; }
+    .header-right .date { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); }
+    .cats { display: flex; gap: 8px; margin-top: 6px; justify-content: flex-end; }
+    .cat-tag { font-family: 'DM Mono', monospace; font-size: 9px; opacity: 0.6; }
+
+    /* ── Body ── */
+    .body { padding: 32px 24px 80px; max-width: 680px; margin: 0 auto; }
+
+    /* ── Idle ── */
+    .idle { text-align: center; padding-top: 60px; }
+    .idle .coffee { font-size: 40px; margin-bottom: 16px; }
+    .idle .tagline { font-size: 19px; color: #c0bbb0; margin-bottom: 8px; }
+    .idle .sub { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); line-height: 1.9; margin-bottom: 36px; }
+    .source-grid { margin-top: 40px; text-align: left; }
+    .source-label { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--dim); margin-bottom: 10px; }
+    .source-list { display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px; }
+    .source-item { display: flex; align-items: center; gap: 6px; padding: 6px 0; border-bottom: 1px solid #0c0c14; }
+    .source-item span { font-family: 'DM Mono', monospace; font-size: 11px; color: #383855; }
+
+    /* ── Button ── */
+    .btn {
+      background: transparent;
+      border: 1px solid var(--dim);
+      color: var(--text);
+      padding: 12px 32px;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: all 0.2s;
+      -webkit-appearance: none;
+    }
+    .btn:active { opacity: 0.6; transform: scale(0.97); }
+
+    /* ── Loading ── */
+    .loading { text-align: center; padding-top: 60px; }
+    .loading-text { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); margin: 18px 0 28px; letter-spacing: 0.05em; }
+    .feed-pills { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; max-width: 360px; margin: 0 auto; }
+    .pill {
+      font-family: 'DM Mono', monospace; font-size: 9px;
+      padding: 3px 8px; border-radius: 2px;
+      border: 1px solid var(--border);
+      color: var(--dim);
+      transition: all 0.3s;
+    }
+    .pill.ok { border-color: #1a3a2a; background: #0c1a12; color: #34d399; }
+    .pill.fail { border-color: #3a1a1a; background: #1a0c0c; color: #f87171; }
+
+    /* ── Dots ── */
+    .dots { display: flex; justify-content: center; gap: 6px; }
+    .dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--dim);
+      animation: blink 1.2s ease-in-out infinite;
+    }
+    .dot:nth-child(2) { animation-delay: 0.2s; }
+    .dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes blink { 0%,80%,100%{opacity:.2;transform:scale(.8)} 40%{opacity:1;transform:scale(1.2)} }
+
+    /* ── Results header ── */
+    .results-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+    .results-meta { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--dim); }
+    .refresh-btn { background: none; border: none; font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); cursor: pointer; letter-spacing: 0.1em; text-transform: uppercase; }
+    .refresh-btn:active { opacity: 0.5; }
+
+    /* ── Article card ── */
+    .card {
+      padding: 22px 0;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    .card-inner { display: flex; gap: 16px; align-items: flex-start; }
+    .card-num { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--dim); padding-top: 2px; min-width: 16px; }
+    .card-content { flex: 1; }
+    .card-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .card-cat { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; }
+    .card-source { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--dim); }
+    .card-time { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--dim); margin-left: auto; }
+    .card-headline { font-size: 17px; font-weight: 400; color: #cac5ba; line-height: 1.4; margin-bottom: 7px; letter-spacing: -0.01em; }
+    .card-hook { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); line-height: 1.65; }
+
+    /* ── Feedback row ── */
+    .feedback-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+    }
+    .feedback-row a {
+      flex: 1;
+      display: block;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--muted);
+      text-decoration: none;
+      letter-spacing: 0.05em;
+    }
+    .feedback-row a:active { opacity: 0.5; }
+    .fb-btn {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      width: 32px;
+      height: 28px;
+      cursor: pointer;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+      -webkit-appearance: none;
+    }
+    .fb-btn.active-up { border-color: #34d399; background: #0c1a12; }
+    .fb-btn.active-down { border-color: #f87171; background: #1a0c0c; }
+    .fb-btn:active { transform: scale(0.9); }
+
+    /* ── Error ── */
+    .error { text-align: center; padding-top: 60px; font-family: 'DM Mono', monospace; }
+    .error-icon { font-size: 24px; color: var(--muted); margin-bottom: 12px; }
+    .error-msg { color: var(--muted); font-size: 12px; margin-bottom: 6px; }
+    .error-sub { color: var(--dim); font-size: 11px; margin-bottom: 24px; line-height: 1.7; }
+
+    /* ── Install banner ── */
+    .install-banner {
+      position: fixed;
+      bottom: 0;
+      left: 0; right: 0;
+      padding: 14px 24px calc(14px + env(safe-area-inset-bottom));
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 20;
+    }
+    .install-banner p { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); flex: 1; line-height: 1.5; }
+    .install-banner .dismiss { background: none; border: none; color: var(--dim); font-size: 18px; cursor: pointer; padding: 4px; }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<div class="header">
+  <div class="header-left">
+    <div class="greeting" id="greeting">Good morning, Matt</div>
+    <div class="title">The Morning Brief</div>
+  </div>
+  <div class="header-right">
+    <div class="date" id="date-display"></div>
+    <div class="cats">
+      <span class="cat-tag" style="color:var(--physics)">⚛ Physics</span>
+      <span class="cat-tag" style="color:var(--ai)">🤖 AI</span>
+      <span class="cat-tag" style="color:var(--energy)">⚡ Energy</span>
+      <span class="cat-tag" style="color:var(--philosophy)">🧠 Philosophy</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── Body ── -->
+<div class="body" id="app"></div>
+
+<!-- ── Install banner ── -->
+<div class="install-banner" id="install-banner" style="display:none">
+  <p>Add to Home Screen for the full app experience: tap Share → "Add to Home Screen"</p>
+  <button class="dismiss" onclick="dismissInstall()">×</button>
+</div>
+
+<script>
+// ── Config ──────────────────────────────────────────────────────────────────
+// IMPORTANT: Replace this with your Railway backend URL after deploying
+const API_BASE = window.location.origin.includes("localhost") || window.location.origin.includes("railway")
+  ? window.location.origin
+  : "REPLACE_WITH_YOUR_RAILWAY_URL";
+
+const FEEDS = [
+  { name: "Quanta – Physics", category: "Physics" },
+  { name: "APS Physics",      category: "Physics" },
+  { name: "Backreaction",     category: "Physics" },
+  { name: "Simon Willison",   category: "AI"      },
+  { name: "The Batch",        category: "AI"      },
+  { name: "Canary Media",     category: "Energy"  },
+  { name: "Carbon Brief",     category: "Energy"  },
+  { name: "Aeon",             category: "Philosophy" },
+  { name: "Astral Codex Ten", category: "Philosophy" },
+];
+
+const CAT = {
+  Physics:    { emoji: "⚛",  color: "var(--physics)"    },
+  AI:         { emoji: "🤖", color: "var(--ai)"          },
+  Energy:     { emoji: "⚡", color: "var(--energy)"      },
+  Philosophy: { emoji: "🧠", color: "var(--philosophy)"  },
+};
+
+// ── State ────────────────────────────────────────────────────────────────────
+let state = { phase: "idle", picks: [], feedStatus: {}, feedback: {} };
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+document.addEventListener("DOMContentLoaded", () => {
+  // Greeting
+  const h = new Date().getHours();
+  document.getElementById("greeting").textContent =
+    (h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening") + ", Matt";
+  document.getElementById("date-display").textContent =
+    new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+
+  // PWA install prompt
+  const isStandalone = window.navigator.standalone || window.matchMedia("(display-mode: standalone)").matches;
+  const dismissed = localStorage.getItem("install-dismissed");
+  if (!isStandalone && !dismissed && /iPhone|iPad|iPod/.test(navigator.userAgent)) {
+    setTimeout(() => document.getElementById("install-banner").style.display = "flex", 2000);
+  }
+
+  render();
+});
+
+function dismissInstall() {
+  localStorage.setItem("install-dismissed", "1");
+  document.getElementById("install-banner").style.display = "none";
+}
+
+// ── Render ───────────────────────────────────────────────────────────────────
+function render() {
+  const app = document.getElementById("app");
+  const { phase, picks, feedStatus } = state;
+
+  if (phase === "idle") {
+    app.innerHTML = `
+      <div class="idle">
+        <div class="coffee">☕</div>
+        <div class="tagline">Ready when you are.</div>
+        <div class="sub">Fetches fresh articles from 9 sources.<br>Claude picks the 6 most interesting. ~20 sec.</div>
+        <button class="btn" onclick="run()">Build today's brief →</button>
+        <div class="source-grid">
+          <div class="source-label">Sources</div>
+          <div class="source-list">
+            ${FEEDS.map(f => `
+              <div class="source-item">
+                <span style="color:${CAT[f.category].color};opacity:0.45;font-size:10px">${CAT[f.category].emoji}</span>
+                <span>${f.name}</span>
+              </div>`).join("")}
+          </div>
+        </div>
+      </div>`;
+  }
+
+  else if (phase === "fetching" || phase === "ranking") {
+    app.innerHTML = `
+      <div class="loading">
+        <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+        <div class="loading-text">${phase === "fetching" ? "Pulling articles from sources…" : "Claude is reading and curating…"}</div>
+        <div class="feed-pills">
+          ${FEEDS.map(f => {
+            const st = feedStatus[f.name];
+            return `<span class="pill ${st || ""}">${st === "ok" ? "✓ " : st === "fail" ? "✗ " : "· "}${f.name}</span>`;
+          }).join("")}
+        </div>
+      </div>`;
+  }
+
+  else if (phase === "done" && picks.length) {
+    const total = picks.reduce((s, p) => s + (p.readTime || 4), 0);
+    app.innerHTML = `
+      <div class="results-header">
+        <span class="results-meta">${picks.length} picks · ~${total} min</span>
+        <button class="refresh-btn" onclick="run()">↺ Refresh</button>
+      </div>
+      ${picks.map((p, i) => cardHTML(p, i)).join("")}`;
+  }
+
+  else if (phase === "error") {
+    app.innerHTML = `
+      <div class="error">
+        <div class="error-icon">⚠</div>
+        <div class="error-msg">Couldn't reach the server.</div>
+        <div class="error-sub">Make sure your Railway backend is running.<br>Check the setup guide if needed.</div>
+        <button class="btn" onclick="run()">Try again</button>
+      </div>`;
+  }
+}
+
+function cardHTML(p, i) {
+  const cfg = CAT[p.category] || { emoji: "·", color: "var(--muted)" };
+  const fb = state.feedback[p.link];
+  return `
+    <div class="card" id="card-${i}">
+      <div class="card-inner">
+        <div class="card-num">${String(i+1).padStart(2,"0")}</div>
+        <div class="card-content">
+          <div class="card-meta">
+            <span class="card-cat" style="color:${cfg.color}">${cfg.emoji} ${p.category}</span>
+            <span class="card-source">${p.source}</span>
+            <span class="card-time">${p.readTime || 4} min</span>
+          </div>
+          <div class="card-headline">${escHtml(p.headline || p.title)}</div>
+          <div class="card-hook">${escHtml(p.hook || p.description?.slice(0, 130) || "")}</div>
+          <div class="feedback-row">
+            <a href="${p.link}" target="_blank" rel="noopener">Read article →</a>
+            <button class="fb-btn ${fb === true ? 'active-up' : ''}" onclick="sendFeedback(${i}, true)" title="Good pick">👍</button>
+            <button class="fb-btn ${fb === false ? 'active-down' : ''}" onclick="sendFeedback(${i}, false)" title="Not for me">👎</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function escHtml(str) {
+  return (str || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+// ── Run ───────────────────────────────────────────────────────────────────────
+async function run() {
+  state.phase = "fetching";
+  state.feedStatus = {};
+  state.picks = [];
+  render();
+
+  try {
+    // Fetch articles from backend
+    const articlesRes = await fetch(`${API_BASE}/api/articles`);
+    if (!articlesRes.ok) throw new Error("Backend unreachable");
+    const { articles, feed_status } = await articlesRes.json();
+
+    state.feedStatus = feed_status;
+    state.phase = "ranking";
+    render();
+
+    if (!articles.length) { state.phase = "error"; render(); return; }
+
+    // Fetch feedback history to inject into prompt
+    let feedbackCtx = { liked: [], disliked: [] };
+    try {
+      const fbRes = await fetch(`${API_BASE}/api/feedback/recent`);
+      if (fbRes.ok) feedbackCtx = await fbRes.json();
+    } catch {}
+
+    // Call Claude
+    const picks = await rankWithClaude(articles, feedbackCtx);
+    state.picks = picks;
+    state.phase = picks.length ? "done" : "error";
+    render();
+
+  } catch (err) {
+    console.error(err);
+    state.phase = "error";
+    render();
+  }
+}
+
+// ── Claude ranking ────────────────────────────────────────────────────────────
+async function rankWithClaude(articles, feedbackCtx) {
+  const list = articles.map((a, i) =>
+    `[${i}] SOURCE: ${a.source} | CATEGORY: ${a.category}\nTITLE: ${a.title}\nSNIPPET: ${a.description}`
+  ).join("\n\n");
+
+  let tasteContext = "";
+  if (feedbackCtx.liked.length || feedbackCtx.disliked.length) {
+    tasteContext = `\n\nMatt's reading history (use this to calibrate your picks):`;
+    if (feedbackCtx.liked.length) {
+      tasteContext += `\nARTICLES HE LIKED:\n` + feedbackCtx.liked.map(f => `- "${f.title}" (${f.source}, ${f.category})`).join("\n");
+    }
+    if (feedbackCtx.disliked.length) {
+      tasteContext += `\nARTICLES HE DIDN'T LIKE:\n` + feedbackCtx.disliked.map(f => `- "${f.title}" (${f.source}, ${f.category})`).join("\n");
+    }
+    tasteContext += `\nUse this taste signal to weight your selections — lean toward what he's liked, avoid patterns he's disliked.`;
+  }
+
+  const prompt = `You are a brilliant editorial curator helping Matt — a GTM strategy professional in Vancouver, intellectually curious across physics, AI productivity, clean energy, and philosophy — pick his best morning reads.${tasteContext}
+
+From the articles below, select the 6 most intellectually interesting, surprising, or substantive ones. Prioritize genuine insight over routine news, counterintuitive findings, and depth.
+
+Return a JSON array of exactly 6 objects:
+- index: integer (the [N] number)
+- headline: punchy 8–12 word rewrite capturing WHY it's interesting
+- hook: one sentence max 25 words — what makes this worth reading this morning
+- readTime: estimated minutes (integer, 2–8)
+
+Return ONLY valid JSON. No preamble, no markdown.
+
+ARTICLES:
+${list}`;
+
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 1000,
+      messages: [{ role: "user", content: prompt }],
+    }),
+  });
+
+  const data = await res.json();
+  const text = data.content?.[0]?.text || "[]";
+  try {
+    const ranked = JSON.parse(text.replace(/```json|```/g, "").trim());
+    return ranked.map(p => ({ ...p, ...articles[p.index] })).filter(p => p.title);
+  } catch { return []; }
+}
+
+// ── Feedback ──────────────────────────────────────────────────────────────────
+async function sendFeedback(cardIndex, liked) {
+  const pick = state.picks[cardIndex];
+  if (!pick) return;
+
+  // Optimistic UI update
+  state.feedback[pick.link] = liked;
+  render();
+
+  try {
+    await fetch(`${API_BASE}/api/feedback`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        article_url: pick.link,
+        article_title: pick.title,
+        source: pick.source,
+        category: pick.category,
+        liked,
+      }),
+    });
+  } catch (err) {
+    console.error("Feedback failed:", err);
+  }
+}
+</script>
+</body>
+</html>

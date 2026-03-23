@@ -169,7 +169,7 @@ def submit_feedback(body: FeedbackIn):
 
 # ─── Frontend ─────────────────────────────────────────────────────────────────
 
-FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "..", "frontend")
+FRONTEND_DIR = os.path.dirname(os.path.abspath(__file__))
 
 @app.get("/manifest.json")
 def manifest():
