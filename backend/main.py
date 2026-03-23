@@ -5,6 +5,8 @@ import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 from typing import Optional
 
+import json
+
 import httpx
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -166,6 +168,90 @@ def submit_feedback(body: FeedbackIn):
             session.add(Feedback(**body.model_dump()))
         session.commit()
     return {"ok": True}
+
+# ─── Ranking ─────────────────────────────────────────────────────────────────
+
+class RankIn(BaseModel):
+    articles: list[dict]
+    feedback: dict
+
+@app.post("/api/rank")
+async def rank_articles(body: RankIn):
+    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+    if not api_key:
+        return JSONResponse({"error": "ANTHROPIC_API_KEY not set"}, status_code=500)
+
+    articles = body.articles
+    feedback_ctx = body.feedback
+
+    article_list = "\n\n".join(
+        f"[{i}] SOURCE: {a.get('source','')} | CATEGORY: {a.get('category','')}\n"
+        f"TITLE: {a.get('title','')}\nSNIPPET: {a.get('description','')}"
+        for i, a in enumerate(articles)
+    )
+
+    taste_context = ""
+    liked = feedback_ctx.get("liked", [])
+    disliked = feedback_ctx.get("disliked", [])
+    if liked or disliked:
+        taste_context = "\n\nMatt's reading history (use this to calibrate your picks):"
+        if liked:
+            taste_context += "\nARTICLES HE LIKED:\n" + "\n".join(
+                f'- "{f.get("title","")}" ({f.get("source","")}, {f.get("category","")})'
+                for f in liked
+            )
+        if disliked:
+            taste_context += "\nARTICLES HE DIDN'T LIKE:\n" + "\n".join(
+                f'- "{f.get("title","")}" ({f.get("source","")}, {f.get("category","")})'
+                for f in disliked
+            )
+        taste_context += "\nUse this taste signal to weight your selections — lean toward what he's liked, avoid patterns he's disliked."
+
+    prompt = (
+        "You are a brilliant editorial curator helping Matt — a GTM strategy professional "
+        "in Vancouver, intellectually curious across physics, AI productivity, clean energy, "
+        f"and philosophy — pick his best morning reads.{taste_context}\n\n"
+        "From the articles below, select the 6 most intellectually interesting, surprising, "
+        "or substantive ones. Prioritize genuine insight over routine news, counterintuitive "
+        "findings, and depth.\n\n"
+        "Return a JSON array of exactly 6 objects:\n"
+        "- index: integer (the [N] number)\n"
+        "- headline: punchy 8–12 word rewrite capturing WHY it's interesting\n"
+        "- hook: one sentence max 25 words — what makes this worth reading this morning\n"
+        "- readTime: estimated minutes (integer, 2–8)\n\n"
+        "Return ONLY valid JSON. No preamble, no markdown.\n\n"
+        f"ARTICLES:\n{article_list}"
+    )
+
+    async with httpx.AsyncClient() as client:
+        r = await client.post(
+            "https://api.anthropic.com/v1/messages",
+            headers={
+                "x-api-key": api_key,
+                "anthropic-version": "2023-06-01",
+                "content-type": "application/json",
+            },
+            json={
+                "model": "claude-sonnet-4-20250514",
+                "max_tokens": 1000,
+                "messages": [{"role": "user", "content": prompt}],
+            },
+            timeout=30,
+        )
+
+    if r.status_code != 200:
+        return JSONResponse({"error": "Anthropic API error", "detail": r.text}, status_code=502)
+
+    data = r.json()
+    text = data.get("content", [{}])[0].get("text", "[]")
+    try:
+        ranked = json.loads(text.replace("```json", "").replace("```", "").strip())
+        picks = [{**p, **articles[p["index"]]} for p in ranked if p.get("index") is not None and p["index"] < len(articles)]
+        picks = [p for p in picks if p.get("title")]
+    except (json.JSONDecodeError, KeyError, IndexError):
+        picks = []
+
+    return {"picks": picks}
 
 # ─── Frontend ─────────────────────────────────────────────────────────────────
 

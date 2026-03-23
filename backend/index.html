@@ -411,53 +411,14 @@ async function run() {
 
 // ── Claude ranking ────────────────────────────────────────────────────────────
 async function rankWithClaude(articles, feedbackCtx) {
-  const list = articles.map((a, i) =>
-    `[${i}] SOURCE: ${a.source} | CATEGORY: ${a.category}\nTITLE: ${a.title}\nSNIPPET: ${a.description}`
-  ).join("\n\n");
-
-  let tasteContext = "";
-  if (feedbackCtx.liked.length || feedbackCtx.disliked.length) {
-    tasteContext = `\n\nMatt's reading history (use this to calibrate your picks):`;
-    if (feedbackCtx.liked.length) {
-      tasteContext += `\nARTICLES HE LIKED:\n` + feedbackCtx.liked.map(f => `- "${f.title}" (${f.source}, ${f.category})`).join("\n");
-    }
-    if (feedbackCtx.disliked.length) {
-      tasteContext += `\nARTICLES HE DIDN'T LIKE:\n` + feedbackCtx.disliked.map(f => `- "${f.title}" (${f.source}, ${f.category})`).join("\n");
-    }
-    tasteContext += `\nUse this taste signal to weight your selections — lean toward what he's liked, avoid patterns he's disliked.`;
-  }
-
-  const prompt = `You are a brilliant editorial curator helping Matt — a GTM strategy professional in Vancouver, intellectually curious across physics, AI productivity, clean energy, and philosophy — pick his best morning reads.${tasteContext}
-
-From the articles below, select the 6 most intellectually interesting, surprising, or substantive ones. Prioritize genuine insight over routine news, counterintuitive findings, and depth.
-
-Return a JSON array of exactly 6 objects:
-- index: integer (the [N] number)
-- headline: punchy 8–12 word rewrite capturing WHY it's interesting
-- hook: one sentence max 25 words — what makes this worth reading this morning
-- readTime: estimated minutes (integer, 2–8)
-
-Return ONLY valid JSON. No preamble, no markdown.
-
-ARTICLES:
-${list}`;
-
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
+  const res = await fetch(`${API_BASE}/api/rank`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 1000,
-      messages: [{ role: "user", content: prompt }],
-    }),
+    body: JSON.stringify({ articles, feedback: feedbackCtx }),
   });
-
+  if (!res.ok) return [];
   const data = await res.json();
-  const text = data.content?.[0]?.text || "[]";
-  try {
-    const ranked = JSON.parse(text.replace(/```json|```/g, "").trim());
-    return ranked.map(p => ({ ...p, ...articles[p.index] })).filter(p => p.title);
-  } catch { return []; }
+  return data.picks || [];
 }
 
 // ── Feedback ──────────────────────────────────────────────────────────────────
