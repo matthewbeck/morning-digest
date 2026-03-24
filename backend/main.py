@@ -45,6 +45,7 @@ FEEDS = [
     {"name": "Carbon Brief",      "url": "https://www.carbonbrief.org/feed/",                             "category": "Energy"},
     {"name": "Aeon",              "url": "https://aeon.co/feed.rss",                                      "category": "Philosophy"},
     {"name": "Astral Codex Ten",  "url": "https://www.astralcodexten.com/feed",                           "category": "Philosophy"},
+    {"name": "iJustVibeCoded",   "url": "https://kill-the-newsletter.com/feeds/rychfe075y3dsl5zjm9c.xml", "category": "AI"},
 ]
 
 # ─── RSS parsing ──────────────────────────────────────────────────────────────
