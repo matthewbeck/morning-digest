@@ -45,8 +45,7 @@ FEEDS = [
     {"name": "Gurwinder's The Prism",   "url": "https://gurwinder.substack.com/feed",                             "category": "Philosophy"},
     {"name": "Works in Progress",       "url": "https://worksinprogress.co/feed/",                                "category": "Philosophy"},
     {"name": "Heatmap News",            "url": "https://heatmap.news/feed",                                       "category": "Energy"},
-    {"name": "Carbon Brief",            "url": "https://www.carbonbrief.org/feed/",                               "category": "Energy"},
-    {"name": "iJustVibeCoded",          "url": "https://kill-the-newsletter.com/feeds/rychfe075y3dsl5zjm9c.xml",  "category": "AI"},
+{"name": "iJustVibeCoded",          "url": "https://kill-the-newsletter.com/feeds/rychfe075y3dsl5zjm9c.xml",  "category": "AI"},
 ]
 
 # ─── RSS parsing ──────────────────────────────────────────────────────────────
