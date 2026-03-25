@@ -37,7 +37,8 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], all
 
 FEEDS = [
     {"name": "Quanta – Physics",       "url": "https://www.quantamagazine.org/physics/feed/",                    "category": "Physics"},
-    {"name": "Stratechery",             "url": "https://stratechery.com/feed/",                                   "category": "AI"},
+    {"name": "Matt Rickard",             "url": "https://matt-rickard.com/feed",                                   "category": "AI"},
+    {"name": "Axios AI+",                "url": "https://axios.com/feeds/feed.rss",                               "category": "AI"},
     {"name": "Pragmatic Engineer",      "url": "https://newsletter.pragmaticengineer.com/feed",                   "category": "AI"},
     {"name": "One Useful Thing",        "url": "https://www.oneusefulthing.org/feed",                             "category": "AI"},
     {"name": "Simon Willison",          "url": "https://simonwillison.net/atom/everything/",                      "category": "AI"},
