@@ -36,15 +36,16 @@ app = FastAPI(title="Morning Digest")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 FEEDS = [
-    {"name": "Quanta – Physics",  "url": "https://www.quantamagazine.org/physics/feed/",                  "category": "Physics"},
-    {"name": "APS Physics",       "url": "https://feeds.aps.org/rss/recent/physics.rss",                  "category": "Physics"},
-    {"name": "Backreaction",      "url": "https://backreaction.blogspot.com/feeds/posts/default?alt=rss", "category": "Physics"},
-    {"name": "Simon Willison",    "url": "https://simonwillison.net/atom/everything/",                    "category": "AI"},
-    {"name": "The Batch",         "url": "https://www.deeplearning.ai/the-batch/feed/",                   "category": "AI"},
-    {"name": "Canary Media",      "url": "https://www.canarymedia.com/articles/feed.rss",                 "category": "Energy"},
-    {"name": "Carbon Brief",      "url": "https://www.carbonbrief.org/feed/",                             "category": "Energy"},
-    {"name": "Aeon",              "url": "https://aeon.co/feed.rss",                                      "category": "Philosophy"},
-    {"name": "Astral Codex Ten",  "url": "https://www.astralcodexten.com/feed",                           "category": "Philosophy"},
+    {"name": "Quanta – Physics",       "url": "https://www.quantamagazine.org/physics/feed/",                    "category": "Physics"},
+    {"name": "Stratechery",             "url": "https://stratechery.com/feed/",                                   "category": "AI"},
+    {"name": "Pragmatic Engineer",      "url": "https://newsletter.pragmaticengineer.com/feed",                   "category": "AI"},
+    {"name": "One Useful Thing",        "url": "https://www.oneusefulthing.org/feed",                             "category": "AI"},
+    {"name": "Simon Willison",          "url": "https://simonwillison.net/atom/everything/",                      "category": "AI"},
+    {"name": "Gurwinder's The Prism",   "url": "https://gurwinder.substack.com/feed",                             "category": "Philosophy"},
+    {"name": "Works in Progress",       "url": "https://worksinprogress.co/feed/",                                "category": "Philosophy"},
+    {"name": "Heatmap News",            "url": "https://heatmap.news/feed",                                       "category": "Energy"},
+    {"name": "Carbon Brief",            "url": "https://www.carbonbrief.org/feed/",                               "category": "Energy"},
+    {"name": "iJustVibeCoded",          "url": "https://kill-the-newsletter.com/feeds/rychfe075y3dsl5zjm9c.xml",  "category": "AI"},
 ]
 
 # ─── RSS parsing ──────────────────────────────────────────────────────────────
