@@ -235,17 +235,7 @@
 // ── Config ──────────────────────────────────────────────────────────────────
 const API_BASE = "";
 
-const FEEDS = [
-  { name: "Quanta – Physics", category: "Physics" },
-  { name: "APS Physics",      category: "Physics" },
-  { name: "Backreaction",     category: "Physics" },
-  { name: "Simon Willison",   category: "AI"      },
-  { name: "The Batch",        category: "AI"      },
-  { name: "Canary Media",     category: "Energy"  },
-  { name: "Carbon Brief",     category: "Energy"  },
-  { name: "Aeon",             category: "Philosophy" },
-  { name: "Astral Codex Ten", category: "Philosophy" },
-];
+let FEEDS = [];
 
 const CAT = {
   Physics:    { emoji: "⚛",  color: "var(--physics)"    },
@@ -258,13 +248,19 @@ const CAT = {
 let state = { phase: "idle", picks: [], feedStatus: {}, feedback: {} };
 
 // ── Init ─────────────────────────────────────────────────────────────────────
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   // Greeting
   const h = new Date().getHours();
   document.getElementById("greeting").textContent =
     (h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening") + ", Matt";
   document.getElementById("date-display").textContent =
     new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+
+  // Fetch feeds from API
+  try {
+    const res = await fetch(`${API_BASE}/api/feeds`);
+    if (res.ok) FEEDS = await res.json();
+  } catch {}
 
   // PWA install prompt
   const isStandalone = window.navigator.standalone || window.matchMedia("(display-mode: standalone)").matches;
@@ -291,7 +287,7 @@ function render() {
       <div class="idle">
         <div class="coffee">☕</div>
         <div class="tagline">Ready when you are.</div>
-        <div class="sub">Fetches fresh articles from 9 sources.<br>Claude picks the 6 most interesting. ~20 sec.</div>
+        <div class="sub">Fetches fresh articles from ${FEEDS.length} sources.<br>Claude picks the 6 most interesting. ~20 sec.</div>
         <button class="btn" onclick="run()">Build today's brief →</button>
         <div class="source-grid">
           <div class="source-label">Sources</div>

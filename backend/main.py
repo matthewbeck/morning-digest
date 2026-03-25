@@ -121,6 +121,10 @@ async def fetch_feed(client: httpx.AsyncClient, feed: dict) -> list[dict]:
 def health():
     return {"status": "ok", "time": datetime.now(timezone.utc).isoformat()}
 
+@app.get("/api/feeds")
+def get_feeds():
+    return [{"name": f["name"], "category": f["category"]} for f in FEEDS]
+
 @app.get("/api/articles")
 async def get_articles():
     async with httpx.AsyncClient() as client:
