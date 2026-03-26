@@ -44,7 +44,7 @@ FEEDS = [
     {"name": "Simon Willison",          "url": "https://simonwillison.net/atom/everything/",                      "category": "AI"},
     {"name": "Gurwinder's The Prism",   "url": "https://gurwinder.substack.com/feed",                             "category": "Philosophy"},
     {"name": "Works in Progress",       "url": "https://worksinprogress.co/feed/",                                "category": "Philosophy"},
-    {"name": "Heatmap News",            "url": "https://heatmap.news/feed",                                       "category": "Energy"},
+    {"name": "Canary Media",            "url": "https://www.canarymedia.com/articles/feed.rss",                   "category": "Energy"},
 {"name": "iJustVibeCoded",          "url": "https://kill-the-newsletter.com/feeds/rychfe075y3dsl5zjm9c.xml",  "category": "AI"},
 ]
 
